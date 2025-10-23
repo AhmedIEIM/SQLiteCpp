@@ -1,0 +1,81 @@
+name: Main Workflow
+
+on:
+  push:
+    branches: [ main, master, develop, 'releases/**' ]
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sonarqube:
+    runs-on: windows-latest
+    env:
+      BW_DIR: bw-out
+      BUILD_DIR: build
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false   # tests/examples off => no need for googletest
+
+      # MSYS2/MinGW64 toolchain + CMake + Ninja + SQLite3 dev
+      - name: Install MSYS2 base
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          msystem: MINGW64
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-sqlite3
+
+      # Build Wrapper for Windows (adds build-wrapper-win-x86-64.exe to PATH)
+      - name: Install Build Wrapper
+        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v6
+
+      # Configure with CMake (unwrapped)
+      - name: CMake configure (Ninja)
+        shell: pwsh
+        run: >
+          C:\msys64\usr\bin\bash.exe -lc
+          "set -euo pipefail;
+           ws='${{ github.workspace }}';
+           ws=${ws//\\//};
+           cmake -S \"$ws\" -B \"$ws/${{ env.BUILD_DIR }}\" -G Ninja
+             -DCMAKE_BUILD_TYPE=Release
+             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+             -DSQLITECPP_BUILD_TESTS=OFF
+             -DSQLITECPP_BUILD_EXAMPLES=OFF"
+
+      # Build under the wrapper (wrapped)
+      - name: CMake build (wrapped)
+        shell: pwsh
+        run: >
+          $bash = "C:\msys64\usr\bin\bash.exe";
+          $ws = "${{ github.workspace }}" -replace '\\','/';
+          build-wrapper-win-x86-64.exe --out-dir $env:BW_DIR `
+            $bash -lc "cmake --build \"$ws/${{ env.BUILD_DIR }}\" --config Release -j2"
+
+      # (Optional) Inspect the first lines of compile_commands.json
+      - name: Show compile_commands.json
+        shell: pwsh
+        run: |
+          Get-Item "$env:BW_DIR\compile_commands.json"
+          Get-Content "$env:BW_DIR\compile_commands.json" -TotalCount 20
+
+      # SonarCloud scan (needs SONAR_TOKEN and a sonar-project.properties at repo root)
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            --define sonar.sources=.
+            --define sonar.exclusions=**/tests/**,**/googletest/**,**/.scannerwork/**,**/${{ env.BUILD_DIR }}/**
+            --define sonar.cfamily.compile-commands=${{ env.BW_DIR }}/compile_commands.json
+            --define sonar.verbose=true
