@@ -13,17 +13,22 @@ permissions:
 jobs:
   sonarqube:
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}   # ensure /mingw64/bin (cmake, ninja) are on PATH
+
     env:
       BW_DIR: bw-out
       BUILD_DIR: build
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: false   # tests/examples off => no need for googletest
+          submodules: false   # tests/examples OFF => no need for googletest
 
       # MSYS2/MinGW64 toolchain + CMake + Ninja + SQLite3 dev
-      - name: Install MSYS2 base
+      - name: Install MSYS2 toolchain
         uses: msys2/setup-msys2@v2
         with:
           update: true
@@ -38,30 +43,24 @@ jobs:
       - name: Install Build Wrapper
         uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v6
 
-      # Configure with CMake (unwrapped)
+      # Configure with CMake (runs inside MSYS2 MINGW64; cmake/ninja on PATH)
       - name: CMake configure (Ninja)
-        shell: pwsh
-        run: >
-          C:\msys64\usr\bin\bash.exe -lc
-          "set -euo pipefail;
-           ws='${{ github.workspace }}';
-           ws=${ws//\\//};
-           cmake -S \"$ws\" -B \"$ws/${{ env.BUILD_DIR }}\" -G Ninja
-             -DCMAKE_BUILD_TYPE=Release
-             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-             -DSQLITECPP_BUILD_TESTS=OFF
-             -DSQLITECPP_BUILD_EXAMPLES=OFF"
+        run: |
+          cmake -S . -B "${BUILD_DIR}" -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DSQLITECPP_BUILD_TESTS=OFF \
+            -DSQLITECPP_BUILD_EXAMPLES=OFF
 
-      # Build under the wrapper (wrapped)
+      # Build under the wrapper: call wrapper from PowerShell, run build in MSYS2
       - name: CMake build (wrapped)
         shell: pwsh
-        run: >
-          $bash = "C:\msys64\usr\bin\bash.exe";
-          $ws = "${{ github.workspace }}" -replace '\\','/';
-          build-wrapper-win-x86-64.exe --out-dir $env:BW_DIR `
-            $bash -lc "cmake --build \"$ws/${{ env.BUILD_DIR }}\" --config Release -j2"
+        run: |
+          $ws = "${{ github.workspace }}" -replace '\\','/'
+          $build = "cmake --build `"$ws/${{ env.BUILD_DIR }}`" --config Release -j2"
+          build-wrapper-win-x86-64.exe --out-dir $env:BW_DIR msys2 -c "$build"
 
-      # (Optional) Inspect the first lines of compile_commands.json
+      # (Optional) Inspect the first lines of compile_commands.json from wrapper
       - name: Show compile_commands.json
         shell: pwsh
         run: |
