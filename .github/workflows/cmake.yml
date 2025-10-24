@@ -4,91 +4,66 @@ on: [push, pull_request]
 
 jobs:
   build:
-    name: ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
+    name: ${{ matrix.cfg.name }}
+    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
-        config:
-        - {
-            name: "Windows Latest MSVC",
-            os: windows-latest,
-            generator: "Visual Studio 17 2022",
-            build_type: "Debug",
-            cc: "cl", cxx: "cl",
-            extra_path: "",
-          }
-        - {
-            name: "Windows Latest MinGW",
-            os: windows-latest,
-            generator: "MinGW Makefiles",
-            build_type: "Debug",
-            cc: "gcc", cxx: "g++",
-            # will be filled by choco install
-            extra_path: "C:\\ProgramData\\chocolatey\\lib\\mingw\\tools\\install\\mingw64\\bin",
-          }
-        - {
-            name: "Ubuntu 24.04 GCC",
-            os: ubuntu-24.04,
-            generator: "Unix Makefiles",
-            build_type: "Debug",
-            cc: "gcc", cxx: "g++",
-            extra_path: "",
-          }
-        - {
-            name: "Ubuntu 22.04 GCC",
-            os: ubuntu-22.04,
-            generator: "Unix Makefiles",
-            build_type: "Debug",
-            cc: "gcc", cxx: "g++",
-            extra_path: "",
-          }
-        - {
-            name: "macOS Latest Clang",
-            os: macos-latest,
-            generator: "Unix Makefiles",
-            build_type: "Debug",
-            cc: "clang", cxx: "clang++",
-            extra_path: "",
-          }
+        cfg:
+          - { name: "Windows MSVC (VS2022)", gen: "Visual Studio 17 2022", build_type: "Debug", cc: "cl",  cxx: "cl",  use_mingw: "false" }
+          - { name: "Windows MinGW (Makefiles)", gen: "MinGW Makefiles",    build_type: "Debug", cc: "gcc", cxx: "g++", use_mingw: "true"  }
 
     steps:
-    - name: Checkout ${{ github.ref_name }}
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        submodules: recursive
+      - name: Checkout ${{ github.ref_name }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
 
-    # Make MinGW job deterministic (provides mingw32-make.exe for the generator)
-    - name: Install MinGW (Windows MinGW only)
-      if: matrix.config.generator == 'MinGW Makefiles' && runner.os == 'Windows'
-      shell: powershell
-      run: choco install -y mingw
+      # Ensure googletest is here (fail early if not)
+      - name: Verify googletest submodule
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "$env:GITHUB_WORKSPACE\googletest\CMakeLists.txt")) {
+            git submodule sync --recursive
+            git submodule update --init --recursive
+          }
+          if (-not (Test-Path "$env:GITHUB_WORKSPACE\googletest\CMakeLists.txt")) {
+            Write-Error "googletest submodule is missing (required when SQLITECPP_BUILD_TESTS=ON)."
+          }
 
-    - name: set extra GITHUB_PATH ${{ matrix.config.extra_path }} (for MinGW)
-      if: matrix.config.extra_path != ''
-      shell: bash
-      run: echo "${{ matrix.config.extra_path }}" >> $GITHUB_PATH
+      # MSVC env (for the Visual Studio generator)
+      - name: Setup MSVC env
+        if: matrix.cfg.use_mingw == 'false'
+        uses: ilammy/msvc-dev-cmd@v1
 
-    - name: set env CC/CXX
-      shell: cmake -P {0}
-      run: |
-        set(ENV{CC} ${{ matrix.config.cc }})
-        set(ENV{CXX} ${{ matrix.config.cxx }})
+      # Install MinGW (for the MinGW Makefiles generator)
+      - name: Install MinGW
+        if: matrix.cfg.use_mingw == 'true'
+        shell: pwsh
+        run: choco install -y mingw
 
-    - name: Configure
-      run: |
-        mkdir build
-        cd build
-        cmake -G "${{ matrix.config.generator }}" \
-          -DCMAKE_VERBOSE_MAKEFILE=ON \
-          -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
-          -DBUILD_SHARED_LIBS=ON \
-          -DSQLITECPP_BUILD_TESTS=ON \
-          -DSQLITECPP_BUILD_EXAMPLES=ON \
-          -DSQLITECPP_RUN_CPPCHECK=OFF \
-          -DSQLITECPP_RUN_CPPLINT=OFF ..
-    - name: Build
-      run: cmake --build build --config ${{ matrix.config.build_type }} -j2
-    - name: Test
-      run: ctest --verbose --output-on-failure --test-dir build -C ${{ matrix.config.build_type }}
+      - name: Add MinGW to PATH
+        if: matrix.cfg.use_mingw == 'true'
+        shell: bash
+        run: echo "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin" >> "$GITHUB_PATH"
+
+      - name: Configure
+        shell: bash
+        run: |
+          mkdir -p build
+          cmake -S . -B build -G "${{ matrix.cfg.gen }}" \
+            -DCMAKE_BUILD_TYPE=${{ matrix.cfg.build_type }} \
+            -DBUILD_SHARED_LIBS=ON \
+            -DSQLITECPP_BUILD_TESTS=ON \
+            -DSQLITECPP_BUILD_EXAMPLES=ON \
+            -DSQLITECPP_RUN_CPPCHECK=OFF \
+            -DSQLITECPP_RUN_CPPLINT=OFF
+
+      - name: Build
+        shell: bash
+        run: cmake --build build --config ${{ matrix.cfg.build_type }} -j2
+
+      - name: Test
+        shell: bash
+        run: ctest --verbose --output-on-failure --test-dir build -C ${{ matrix.cfg.build_type }}

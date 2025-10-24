@@ -1,37 +1,26 @@
-name: CMake build of example in subdirectory
+name: CMake build of example in subdirectory (Windows)
 
 on: [push, pull_request]
 
 jobs:
   build:
-    name: ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-        - { name: "Windows Latest MSVC", os: windows-latest, build_type: "Debug", cc: "cl",    cxx: "cl" }
-        - { name: "Ubuntu Latest GCC",   os: ubuntu-latest, build_type: "Debug", cc: "gcc",   cxx: "g++" }
-        - { name: "macOS Latest Clang",  os: macos-latest,  build_type: "Debug", cc: "clang", cxx: "clang++" }
+    runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: configure CC/CXX
-      shell: cmake -P {0}
-      run: |
-        set(ENV{CC} ${{matrix.config.cc}})
-        set(ENV{CXX} ${{matrix.config.cxx}})
-    - name: generate
-      run: |
-        cd examples/example2
-        mkdir build
-        cd build
-        cmake \
-          -DCMAKE_VERBOSE_MAKEFILE=ON \
-          -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
-          -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
-          ..
-    - name: build
-      run: cmake --build examples/example2/build --config ${{ matrix.config.build_type }} -j2
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate
+        shell: bash
+        run: |
+          cd examples/example2
+          mkdir -p build
+          cmake -S . -B build \
+            -DCMAKE_VERBOSE_MAKEFILE=ON \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+      - name: Build
+        shell: bash
+        run: cmake --build examples/example2/build --config Debug -j2
