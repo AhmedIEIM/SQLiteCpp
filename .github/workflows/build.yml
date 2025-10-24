@@ -181,14 +181,12 @@ jobs:
           shopt -s nullglob
           for f in out/stripped/bin/*.exe out/stripped/bin/*.dll; do
             base="$(basename "$f")"
-            # Make a .debug file from the *unstripped* original in full/bin if available, else from this file
             if [ -f "out/full/bin/$base" ]; then
               objcopy --only-keep-debug "out/full/bin/$base" "out/symbols/$base.debug" || true
             else
               objcopy --only-keep-debug "$f" "out/symbols/$base.debug" || true
             fi
             strip --strip-debug "$f" || true
-            # Embed a debuglink to the separate .debug file (optional but handy)
             if [ -f "out/symbols/$base.debug" ]; then
               objcopy --add-gnu-debuglink="out/symbols/$base.debug" "$f" || true
             fi
@@ -222,7 +220,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
-      # --- Auto-commit compile_commands.json (avoid CI loops via paths-ignore + [skip ci]) ---
+      # --- Auto-commit compile_commands.json (fix: don't fail when unchanged) ---
       - name: Commit compile_commands.json into repo
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
         shell: pwsh
@@ -230,6 +228,8 @@ jobs:
           TARGET_DIR: compile_commands/windows-msys2
           BUILD_DIR: ${{ env.BUILD_DIR }}
         run: |
+          $ErrorActionPreference = "Stop"
+
           $src = Join-Path $env:GITHUB_WORKSPACE "$env:BUILD_DIR\compile_commands.json"
           if (!(Test-Path $src)) {
             Write-Host "compile_commands.json not found at $src"
@@ -242,14 +242,20 @@ jobs:
 
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
-          git add $env:TARGET_DIR/compile_commands.json
+          git config --global --add safe.directory $env:GITHUB_WORKSPACE
 
-          if ((git diff --cached --quiet) -eq $false) {
+          git add "$env:TARGET_DIR/compile_commands.json"
+
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
             git commit -m "[skip ci] update compile_commands.json ($env:TARGET_DIR)"
             git push
           } else {
             Write-Host "No changes in compile_commands.json; nothing to commit."
           }
+
+          # prevent leftover non-zero $LASTEXITCODE from failing the step
+          exit 0
 
       # SonarCloud scan using compile_commands.json (no wrapper)
       - name: SonarCloud Scan
