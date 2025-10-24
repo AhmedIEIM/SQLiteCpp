@@ -1,8 +1,91 @@
+# name: Main Workflow
+
+# on:
+#   push:
+#     branches: [ main, master, develop, 'releases/**' ]
+#   pull_request:
+#     types: [ opened, synchronize, reopened ]
+
+# permissions:
+#   contents: write
+#   pull-requests: write
+
+# jobs:
+#   sonarqube:
+#     runs-on: windows-latest
+#     defaults:
+#       run:
+#         shell: msys2 {0}   # cmake/ninja come from /mingw64/bin
+
+#     env:
+#       BUILD_DIR: build
+
+#     steps:
+#       - uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0
+#           submodules: false  # we self-heal below
+
+#       # Robust: try submodule init/update; if still missing, shallow-clone googletest
+#       - name: Ensure googletest is present
+#         shell: pwsh
+#         run: |
+#           git submodule sync --recursive
+#           git -c protocol.version=2 submodule update --init --force --depth 1 --recursive --jobs 8
+#           if (-not (Test-Path "$env:GITHUB_WORKSPACE\googletest\CMakeLists.txt")) {
+#             Write-Host "Submodule missing; cloning googletest shallowly..."
+#             if (Test-Path "$env:GITHUB_WORKSPACE\googletest") {
+#               Remove-Item -Recurse -Force "$env:GITHUB_WORKSPACE\googletest"
+#             }
+#             git clone --depth 1 https://github.com/google/googletest.git "$env:GITHUB_WORKSPACE\googletest"
+#           }
+#           if (-not (Test-Path "$env:GITHUB_WORKSPACE\googletest\CMakeLists.txt")) {
+#             Write-Error "googletest is still missing; aborting."
+#           }
+
+#       - name: Install MSYS2 toolchain
+#         uses: msys2/setup-msys2@v2
+#         with:
+#           update: true
+#           msystem: MINGW64
+#           install: >-
+#             mingw-w64-x86_64-gcc
+#             mingw-w64-x86_64-cmake
+#             mingw-w64-x86_64-ninja
+
+#       - name: Configure (Ninja, export compile_commands.json)
+#         run: >
+#           cmake -S . -B "${BUILD_DIR}" -G Ninja
+#           -DCMAKE_BUILD_TYPE=Release
+#           -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+#           -DSQLITECPP_BUILD_TESTS=ON
+#           -DSQLITECPP_BUILD_EXAMPLES=ON
+
+#       - name: Build
+#         run: cmake --build "${BUILD_DIR}" --config Release -j2
+
+#       - name: Test
+#         run: ctest --output-on-failure -C Release --test-dir "${BUILD_DIR}"
+
+#       # SonarCloud scan using compile_commands.json (no wrapper)
+#       - name: SonarCloud Scan
+#         uses: SonarSource/sonarqube-scan-action@v6
+#         env:
+#           SONAR_TOKEN: $#{{ secrets.SONAR_TOKEN }}
+#         with:
+#           args: >
+#             --define sonar.sources=.
+#             --define sonar.exclusions=**/googletest/**,**/.scannerwork/**,**/$#{{ env.BUILD_DIR }}/**
+#             --define sonar.cfamily.compile-commands=$#{{ env.BUILD_DIR }}/compile_commands.json
+#             --define sonar.verbose=true
+
 name: Main Workflow
 
 on:
   push:
     branches: [ main, master, develop, 'releases/**' ]
+    paths-ignore:
+      - 'compile_commands/**'   # prevent CI loop when we commit compile_commands.json
   pull_request:
     types: [ opened, synchronize, reopened ]
 
@@ -52,6 +135,7 @@ jobs:
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-binutils
 
       - name: Configure (Ninja, export compile_commands.json)
         run: >
@@ -66,6 +150,106 @@ jobs:
 
       - name: Test
         run: ctest --output-on-failure -C Release --test-dir "${BUILD_DIR}"
+
+      # --- Produce full & stripped bundles for Ghidra ---
+      - name: Package (full + stripped + symbols)
+        run: |
+          set -euo pipefail
+
+          mkdir -p out/full/bin out/full/lib out/full/include
+          mkdir -p out/stripped/bin out/stripped/lib
+          mkdir -p out/symbols
+
+          # Headers
+          [ -d include ] && cp -R include/ out/full/include/ || true
+
+          # Libraries (static)
+          cp -f "${BUILD_DIR}"/libSQLiteCpp*.a out/full/lib/ 2>/dev/null || true
+          find "${BUILD_DIR}" -maxdepth 3 -type f -name 'libSQLiteCpp*.a' -not -path '*/CMakeFiles/*' -exec cp -f {} out/full/lib/ \; || true
+
+          # Binaries (examples/tests)
+          find "${BUILD_DIR}" -type f \( -iname '*.exe' -o -iname '*.dll' \) -not -path '*/CMakeFiles/*' -exec cp -f {} out/full/bin/ \; || true
+
+          # Stripped copies start from full
+          cp -f out/full/lib/* out/stripped/lib/ 2>/dev/null || true
+          cp -f out/full/bin/* out/stripped/bin/ 2>/dev/null || true
+
+          # Strip static libs (remove DWARF)
+          find out/stripped/lib -type f -name '*.a' -exec strip -g {} \; || true
+
+          # Strip EXE/DLL & create separate .debug files (GNU style)
+          shopt -s nullglob
+          for f in out/stripped/bin/*.exe out/stripped/bin/*.dll; do
+            base="$(basename "$f")"
+            # Make a .debug file from the *unstripped* original in full/bin if available, else from this file
+            if [ -f "out/full/bin/$base" ]; then
+              objcopy --only-keep-debug "out/full/bin/$base" "out/symbols/$base.debug" || true
+            else
+              objcopy --only-keep-debug "$f" "out/symbols/$base.debug" || true
+            fi
+            strip --strip-debug "$f" || true
+            # Embed a debuglink to the separate .debug file (optional but handy)
+            if [ -f "out/symbols/$base.debug" ]; then
+              objcopy --add-gnu-debuglink="out/symbols/$base.debug" "$f" || true
+            fi
+          done
+
+          echo "---- FULL ----";     find out/full     -maxdepth 4 -type f -print || true
+          echo "---- STRIPPED ----"; find out/stripped -maxdepth 4 -type f -print || true
+          echo "---- SYMBOLS ----";  find out/symbols  -maxdepth 4 -type f -print || true
+
+      - name: Upload artifact (full symbols)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghidra-full-windows-msys2-Release
+          path: out/full/**
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload artifact (stripped)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghidra-stripped-windows-msys2-Release
+          path: out/stripped/**
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload artifact (separate .debug symbols)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghidra-symbols-windows-msys2-Release
+          path: out/symbols/**
+          if-no-files-found: warn
+          retention-days: 30
+
+      # --- Auto-commit compile_commands.json (avoid CI loops via paths-ignore + [skip ci]) ---
+      - name: Commit compile_commands.json into repo
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
+        shell: pwsh
+        env:
+          TARGET_DIR: compile_commands/windows-msys2
+          BUILD_DIR: ${{ env.BUILD_DIR }}
+        run: |
+          $src = Join-Path $env:GITHUB_WORKSPACE "$env:BUILD_DIR\compile_commands.json"
+          if (!(Test-Path $src)) {
+            Write-Host "compile_commands.json not found at $src"
+            exit 0
+          }
+
+          $outDir = Join-Path $env:GITHUB_WORKSPACE $env:TARGET_DIR
+          New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+          Copy-Item $src (Join-Path $outDir 'compile_commands.json') -Force
+
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add $env:TARGET_DIR/compile_commands.json
+
+          if ((git diff --cached --quiet) -eq $false) {
+            git commit -m "[skip ci] update compile_commands.json ($env:TARGET_DIR)"
+            git push
+          } else {
+            Write-Host "No changes in compile_commands.json; nothing to commit."
+          }
 
       # SonarCloud scan using compile_commands.json (no wrapper)
       - name: SonarCloud Scan

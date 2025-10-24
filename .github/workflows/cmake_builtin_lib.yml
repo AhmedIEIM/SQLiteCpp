@@ -1,3 +1,50 @@
+# name: CMake builtin sqlite3 (Windows)
+
+# on: [push, pull_request]
+
+# jobs:
+#   build:
+#     name: Windows MSVC (VS2022)
+#     runs-on: windows-latest
+
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0
+#           submodules: false
+
+#       - name: Ensure googletest is present
+#         shell: pwsh
+#         run: |
+#           git submodule sync --recursive
+#           git -c protocol.version=2 submodule update --init --force --depth 1 --recursive --jobs 8
+#           if (-not (Test-Path "$env:GITHUB_WORKSPACE\googletest\CMakeLists.txt")) {
+#             Write-Host "Submodule missing; cloning googletest shallowly..."
+#             if (Test-Path "$env:GITHUB_WORKSPACE\googletest") {
+#               Remove-Item -Recurse -Force "$env:GITHUB_WORKSPACE\googletest"
+#             }
+#             git clone --depth 1 https://github.com/google/googletest.git "$env:GITHUB_WORKSPACE\googletest"
+#           }
+#           if (-not (Test-Path "$env:GITHUB_WORKSPACE\googletest\CMakeLists.txt")) {
+#             Write-Error "googletest is still missing; aborting."
+#           }
+
+#       - name: Setup MSVC env
+#         uses: ilammy/msvc-dev-cmd@v1
+
+#       - name: Configure (use bundled sqlite3)
+#         shell: pwsh
+#         run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Debug -DSQLITECPP_INTERNAL_SQLITE=ON -DSQLITE_OMIT_LOAD_EXTENSION=ON -DSQLITECPP_BUILD_TESTS=ON -DSQLITECPP_BUILD_EXAMPLES=ON -DSQLITECPP_RUN_CPPCHECK=OFF -DSQLITECPP_RUN_CPPLINT=OFF
+
+#       - name: Build
+#         shell: pwsh
+#         run: cmake --build build --config Debug -j2
+
+#       - name: Test
+#         shell: pwsh
+#         run: ctest --verbose --output-on-failure --test-dir build -C Debug
+
 name: CMake builtin sqlite3 (Windows)
 
 on: [push, pull_request]
@@ -44,3 +91,48 @@ jobs:
       - name: Test
         shell: pwsh
         run: ctest --verbose --output-on-failure --test-dir build -C Debug
+
+      - name: Package (full + stripped + symbols)
+        shell: pwsh
+        run: |
+          $cfg = "Debug"
+          $bdir = "build"
+
+          New-Item -ItemType Directory -Force -Path "out\full\bin","out\full\lib","out\full\include","out\stripped\bin","out\stripped\lib","out\symbols" | Out-Null
+
+          if (Test-Path "include") { Copy-Item -Recurse -Force "include" "out\full\include" }
+
+          Get-ChildItem -Path $bdir -Recurse -Include SQLiteCpp.lib | ForEach-Object { Copy-Item $_.FullName "out\full\lib\" -Force }
+          Get-ChildItem -Path $bdir -Recurse -Include *.dll,*.exe | ForEach-Object { Copy-Item $_.FullName "out\full\bin\" -Force }
+          Get-ChildItem -Path $bdir -Recurse -Include *.pdb | ForEach-Object { Copy-Item $_.FullName "out\symbols\" -Force }
+
+          Copy-Item -Force "out\full\lib\*" "out\stripped\lib\" -ErrorAction SilentlyContinue
+          Copy-Item -Force "out\full\bin\*" "out\stripped\bin\" -ErrorAction SilentlyContinue
+
+          Write-Host "---- FULL ----";     Get-ChildItem -Recurse out\full     | % FullName
+          Write-Host "---- STRIPPED ----"; Get-ChildItem -Recurse out\stripped | % FullName
+          Write-Host "---- SYMBOLS ----";  Get-ChildItem -Recurse out\symbols  | % FullName
+
+      - name: Upload artifact (full symbols)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghidra-full-windows-msvc-builtin-Debug
+          path: out/full/**
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload artifact (stripped)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghidra-stripped-windows-msvc-builtin-Debug
+          path: out/stripped/**
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload artifact (PDB symbols)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghidra-symbols-windows-msvc-builtin-Debug
+          path: out/symbols/**
+          if-no-files-found: warn
+          retention-days: 30

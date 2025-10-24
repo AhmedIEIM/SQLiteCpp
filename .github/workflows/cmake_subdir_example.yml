@@ -1,3 +1,30 @@
+# name: CMake build of example in subdirectory (Windows)
+
+# on: [push, pull_request]
+
+# jobs:
+#   build:
+#     runs-on: windows-latest
+
+#     steps:
+#       - uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0
+
+#       - name: Generate
+#         shell: bash
+#         run: |
+#           cd examples/example2
+#           mkdir -p build
+#           cmake -S . -B build \
+#             -DCMAKE_VERBOSE_MAKEFILE=ON \
+#             -DCMAKE_BUILD_TYPE=Debug \
+#             -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+#       - name: Build
+#         shell: bash
+#         run: cmake --build examples/example2/build --config Debug -j2
+
 name: CMake build of example in subdirectory (Windows)
 
 on: [push, pull_request]
