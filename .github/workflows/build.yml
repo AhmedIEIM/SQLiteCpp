@@ -25,9 +25,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: false   # tests/examples OFF => no need for googletest
+          submodules: recursive   # needed for googletest when tests/examples are ON
 
-      # MSYS2/MinGW64 toolchain + CMake + Ninja + SQLite3 dev
+      # MSYS2/MinGW64 toolchain + CMake + Ninja (+ sqlite optional)
       - name: Install MSYS2 toolchain
         uses: msys2/setup-msys2@v2
         with:
@@ -37,7 +37,6 @@ jobs:
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
-            mingw-w64-x86_64-sqlite3
 
       # Build Wrapper for Windows (adds build-wrapper-win-x86-64.exe to PATH)
       - name: Install Build Wrapper
@@ -49,8 +48,8 @@ jobs:
           cmake -S . -B "${BUILD_DIR}" -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-            -DSQLITECPP_BUILD_TESTS=OFF \
-            -DSQLITECPP_BUILD_EXAMPLES=OFF
+            -DSQLITECPP_BUILD_TESTS=ON \
+            -DSQLITECPP_BUILD_EXAMPLES=ON
 
       # Build under the wrapper: call wrapper from PowerShell, run build in MSYS2
       - name: CMake build (wrapped)
@@ -59,6 +58,11 @@ jobs:
           $ws = "${{ github.workspace }}" -replace '\\','/'
           $build = "cmake --build `"$ws/${{ env.BUILD_DIR }}`" --config Release -j2"
           build-wrapper-win-x86-64.exe --out-dir $env:BW_DIR msys2 -c "$build"
+
+      # (Optional) run tests (not wrapped; purely for correctness)
+      - name: CTest (run unit tests)
+        run: |
+          ctest --output-on-failure -C Release --test-dir "${BUILD_DIR}"
 
       # (Optional) Inspect the first lines of compile_commands.json from wrapper
       - name: Show compile_commands.json
@@ -75,6 +79,6 @@ jobs:
         with:
           args: >
             --define sonar.sources=.
-            --define sonar.exclusions=**/tests/**,**/googletest/**,**/.scannerwork/**,**/${{ env.BUILD_DIR }}/**
+            --define sonar.exclusions=**/googletest/**,**/.scannerwork/**,**/${{ env.BUILD_DIR }}/**
             --define sonar.cfamily.compile-commands=${{ env.BW_DIR }}/compile_commands.json
             --define sonar.verbose=true

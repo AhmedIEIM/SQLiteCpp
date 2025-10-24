@@ -10,23 +10,33 @@ jobs:
       fail-fast: false
       matrix:
         config:
-        - {
-            name: "Ubuntu Latest GCC",
-            os: ubuntu-latest,
-            generator: "Unix Makefiles",
-          }
-        - {
-            name: "macOS Latest Clang",
-            os: macos-latest,
-            generator: "Unix Makefiles",
-          }
+        - { name: "Ubuntu Latest GCC", os: ubuntu-latest, generator: "Unix Makefiles" }
+        - { name: "macOS Latest Clang", os: macos-latest, generator: "Unix Makefiles" }
 
     steps:
     - name: Checkout ${{ github.ref_name }}
       uses: actions/checkout@v4
-    - run: git submodule update --init --recursive
-    - run: mkdir build
-    - run: cmake -G "Unix Makefiles" -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug -DSQLITECPP_INTERNAL_SQLITE=OFF -DSQLITE_OMIT_LOAD_EXTENSION=ON -DSQLITECPP_BUILD_TESTS=ON -DSQLITECPP_BUILD_EXAMPLES=ON -DSQLITECPP_RUN_CPPCHECK=OFF -DSQLITECPP_RUN_CPPLINT=OFF .. 
-      working-directory: build
-    - run: cmake --build build --config Debug
-    - run: ctest --verbose --output-on-failure --test-dir build
+      with:
+        fetch-depth: 0
+        submodules: recursive
+    - name: Install sqlite3 dev (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libsqlite3-dev
+    - name: Configure
+      run: |
+        mkdir build
+        cd build
+        cmake -G "${{ matrix.config.generator }}" \
+          -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug \
+          -DSQLITECPP_INTERNAL_SQLITE=OFF \
+          -DSQLITE_OMIT_LOAD_EXTENSION=ON \
+          -DSQLITECPP_BUILD_TESTS=ON \
+          -DSQLITECPP_BUILD_EXAMPLES=ON \
+          -DSQLITECPP_RUN_CPPCHECK=OFF \
+          -DSQLITECPP_RUN_CPPLINT=OFF ..
+    - name: Build
+      run: cmake --build build --config Debug -j2
+    - name: Test
+      run: ctest --verbose --output-on-failure --test-dir build

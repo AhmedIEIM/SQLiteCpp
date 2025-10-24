@@ -24,6 +24,7 @@ jobs:
             generator: "MinGW Makefiles",
             build_type: "Debug",
             cc: "gcc", cxx: "g++",
+            # will be filled by choco install
             extra_path: "C:\\ProgramData\\chocolatey\\lib\\mingw\\tools\\install\\mingw64\\bin",
           }
         - {
@@ -54,17 +55,40 @@ jobs:
     steps:
     - name: Checkout ${{ github.ref_name }}
       uses: actions/checkout@v4
-    - run: git submodule update --init --recursive
+      with:
+        fetch-depth: 0
+        submodules: recursive
+
+    # Make MinGW job deterministic (provides mingw32-make.exe for the generator)
+    - name: Install MinGW (Windows MinGW only)
+      if: matrix.config.generator == 'MinGW Makefiles' && runner.os == 'Windows'
+      shell: powershell
+      run: choco install -y mingw
+
     - name: set extra GITHUB_PATH ${{ matrix.config.extra_path }} (for MinGW)
+      if: matrix.config.extra_path != ''
       shell: bash
       run: echo "${{ matrix.config.extra_path }}" >> $GITHUB_PATH
-    - name: set env CXX=${{ matrix.config.cxx }}
+
+    - name: set env CC/CXX
       shell: cmake -P {0}
       run: |
         set(ENV{CC} ${{ matrix.config.cc }})
         set(ENV{CXX} ${{ matrix.config.cxx }})
-    - run: mkdir build
-    - run: cmake -G "${{ matrix.config.generator }}" -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -DBUILD_SHARED_LIBS=ON -DSQLITECPP_BUILD_TESTS=ON -DSQLITECPP_BUILD_EXAMPLES=ON -DSQLITECPP_RUN_CPPCHECK=OFF -DSQLITECPP_RUN_CPPLINT=OFF .. 
-      working-directory: build
-    - run: cmake --build build --config ${{ matrix.config.build_type }}
-    - run: ctest --verbose --output-on-failure --test-dir build
+
+    - name: Configure
+      run: |
+        mkdir build
+        cd build
+        cmake -G "${{ matrix.config.generator }}" \
+          -DCMAKE_VERBOSE_MAKEFILE=ON \
+          -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+          -DBUILD_SHARED_LIBS=ON \
+          -DSQLITECPP_BUILD_TESTS=ON \
+          -DSQLITECPP_BUILD_EXAMPLES=ON \
+          -DSQLITECPP_RUN_CPPCHECK=OFF \
+          -DSQLITECPP_RUN_CPPLINT=OFF ..
+    - name: Build
+      run: cmake --build build --config ${{ matrix.config.build_type }} -j2
+    - name: Test
+      run: ctest --verbose --output-on-failure --test-dir build -C ${{ matrix.config.build_type }}
