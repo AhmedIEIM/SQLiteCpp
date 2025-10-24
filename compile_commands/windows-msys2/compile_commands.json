@@ -1,0 +1,122 @@
+[
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/include -ID:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=gnu++11 -o CMakeFiles\\SQLiteCpp.dir\\src\\Backup.cpp.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\src\\Backup.cpp",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/src/Backup.cpp",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/CMakeFiles/SQLiteCpp.dir/src/Backup.cpp.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/include -ID:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=gnu++11 -o CMakeFiles\\SQLiteCpp.dir\\src\\Column.cpp.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\src\\Column.cpp",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/src/Column.cpp",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/CMakeFiles/SQLiteCpp.dir/src/Column.cpp.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/include -ID:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=gnu++11 -o CMakeFiles\\SQLiteCpp.dir\\src\\Database.cpp.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\src\\Database.cpp",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/src/Database.cpp",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/CMakeFiles/SQLiteCpp.dir/src/Database.cpp.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/include -ID:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=gnu++11 -o CMakeFiles\\SQLiteCpp.dir\\src\\Exception.cpp.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\src\\Exception.cpp",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/src/Exception.cpp",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/CMakeFiles/SQLiteCpp.dir/src/Exception.cpp.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/include -ID:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=gnu++11 -o CMakeFiles\\SQLiteCpp.dir\\src\\Savepoint.cpp.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\src\\Savepoint.cpp",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/src/Savepoint.cpp",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/CMakeFiles/SQLiteCpp.dir/src/Savepoint.cpp.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/include -ID:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=gnu++11 -o CMakeFiles\\SQLiteCpp.dir\\src\\Statement.cpp.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\src\\Statement.cpp",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/src/Statement.cpp",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/CMakeFiles/SQLiteCpp.dir/src/Statement.cpp.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/include -ID:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=gnu++11 -o CMakeFiles\\SQLiteCpp.dir\\src\\Transaction.cpp.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\src\\Transaction.cpp",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/src/Transaction.cpp",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/CMakeFiles/SQLiteCpp.dir/src/Transaction.cpp.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -ID:/a/SQLiteCpp/SQLiteCpp/include -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=gnu++11 -o CMakeFiles\\SQLiteCpp_example1.dir\\examples\\example1\\main.cpp.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\examples\\example1\\main.cpp",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/examples/example1/main.cpp",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/CMakeFiles/SQLiteCpp_example1.dir/examples/example1/main.cpp.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/include -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3 -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles\\SQLiteCpp_tests.dir\\tests\\Column_test.cpp.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\tests\\Column_test.cpp",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/tests/Column_test.cpp",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/CMakeFiles/SQLiteCpp_tests.dir/tests/Column_test.cpp.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/include -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3 -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles\\SQLiteCpp_tests.dir\\tests\\Database_test.cpp.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\tests\\Database_test.cpp",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/tests/Database_test.cpp",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/CMakeFiles/SQLiteCpp_tests.dir/tests/Database_test.cpp.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/include -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3 -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles\\SQLiteCpp_tests.dir\\tests\\Savepoint_test.cpp.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\tests\\Savepoint_test.cpp",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/tests/Savepoint_test.cpp",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/CMakeFiles/SQLiteCpp_tests.dir/tests/Savepoint_test.cpp.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/include -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3 -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles\\SQLiteCpp_tests.dir\\tests\\Statement_test.cpp.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\tests\\Statement_test.cpp",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/tests/Statement_test.cpp",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/CMakeFiles/SQLiteCpp_tests.dir/tests/Statement_test.cpp.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/include -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3 -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles\\SQLiteCpp_tests.dir\\tests\\Backup_test.cpp.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\tests\\Backup_test.cpp",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/tests/Backup_test.cpp",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/CMakeFiles/SQLiteCpp_tests.dir/tests/Backup_test.cpp.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/include -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3 -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles\\SQLiteCpp_tests.dir\\tests\\Transaction_test.cpp.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\tests\\Transaction_test.cpp",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/tests/Transaction_test.cpp",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/CMakeFiles/SQLiteCpp_tests.dir/tests/Transaction_test.cpp.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/include -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3 -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles\\SQLiteCpp_tests.dir\\tests\\VariadicBind_test.cpp.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\tests\\VariadicBind_test.cpp",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/tests/VariadicBind_test.cpp",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/CMakeFiles/SQLiteCpp_tests.dir/tests/VariadicBind_test.cpp.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/include -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3 -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles\\SQLiteCpp_tests.dir\\tests\\Exception_test.cpp.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\tests\\Exception_test.cpp",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/tests/Exception_test.cpp",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/CMakeFiles/SQLiteCpp_tests.dir/tests/Exception_test.cpp.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/include -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3 -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles\\SQLiteCpp_tests.dir\\tests\\ExecuteMany_test.cpp.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\tests\\ExecuteMany_test.cpp",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/tests/ExecuteMany_test.cpp",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/CMakeFiles/SQLiteCpp_tests.dir/tests/ExecuteMany_test.cpp.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\cc.exe -DSQLITE_ENABLE_COLUMN_METADATA -ID:/a/SQLiteCpp/SQLiteCpp/sqlite3 -O3 -DNDEBUG -o sqlite3\\CMakeFiles\\sqlite3.dir\\sqlite3.c.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\sqlite3\\sqlite3.c",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/sqlite3/sqlite3.c",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/sqlite3/CMakeFiles/sqlite3.dir/sqlite3.c.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -ID:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -ID:/a/SQLiteCpp/SQLiteCpp/googletest/googletest  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=c++17 -Wall -Wshadow -Wundef -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=0 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-switch-enum -o googletest\\googletest\\CMakeFiles\\gtest.dir\\src\\gtest-all.cc.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\googletest\\googletest\\src\\gtest-all.cc",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/src/gtest-all.cc",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/googletest/googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.obj"
+},
+{
+  "directory": "D:/a/SQLiteCpp/SQLiteCpp/build",
+  "command": "D:\\a\\_temp\\msys64\\mingw64\\bin\\c++.exe -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/include -isystem D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest  -Wall -Wextra -Wpedantic -Wswitch-enum -Wshadow -Wno-long-long -O3 -DNDEBUG -std=c++17 -Wall -Wshadow -Wundef -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=0 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-switch-enum -o googletest\\googletest\\CMakeFiles\\gtest_main.dir\\src\\gtest_main.cc.obj -c D:\\a\\SQLiteCpp\\SQLiteCpp\\googletest\\googletest\\src\\gtest_main.cc",
+  "file": "D:/a/SQLiteCpp/SQLiteCpp/googletest/googletest/src/gtest_main.cc",
+  "output": "D:/a/SQLiteCpp/SQLiteCpp/build/googletest/googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.obj"
+}
+]
