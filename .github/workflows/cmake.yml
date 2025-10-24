@@ -4,17 +4,8 @@ on: [push, pull_request]
 
 jobs:
   build:
-    name: ${{ matrix.cfg.name }}
+    name: Windows MSVC (VS2022)
     runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        cfg:
-          - { name: "Windows MSVC (VS2022)", gen: "Visual Studio 17 2022", build_type: "Debug", use_mingw: "false",
-              extra_flags: "" }
-          - { name: "Windows MinGW (Makefiles)", gen: "MinGW Makefiles", build_type: "Debug", use_mingw: "true",
-              # Work around missing libssp in Chocolatey MinGW by disabling stack protector:
-              extra_flags: "-DCMAKE_C_FLAGS=-fno-stack-protector -DCMAKE_CXX_FLAGS=-fno-stack-protector" }
 
     steps:
       - name: Checkout
@@ -40,36 +31,16 @@ jobs:
           }
 
       - name: Setup MSVC env
-        if: matrix.cfg.use_mingw == 'false'
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Install MinGW (Chocolatey)
-        if: matrix.cfg.use_mingw == 'true'
-        shell: pwsh
-        run: choco install -y mingw
-
-      - name: Add MinGW to PATH
-        if: matrix.cfg.use_mingw == 'true'
-        shell: bash
-        run: echo "C:\mingw64\bin" >> "$GITHUB_PATH"
-
       - name: Configure
-        shell: bash
-        run: |
-          mkdir -p build
-          cmake -S . -B build -G "${{ matrix.cfg.gen }}" \
-            -DCMAKE_BUILD_TYPE=${{ matrix.cfg.build_type }} \
-            -DBUILD_SHARED_LIBS=OFF \
-            -DSQLITECPP_BUILD_TESTS=ON \
-            -DSQLITECPP_BUILD_EXAMPLES=ON \
-            -DSQLITECPP_RUN_CPPCHECK=OFF \
-            -DSQLITECPP_RUN_CPPLINT=OFF \
-            ${{ matrix.cfg.extra_flags }}
+        shell: pwsh
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Debug -DBUILD_SHARED_LIBS=OFF -DSQLITECPP_BUILD_TESTS=ON -DSQLITECPP_BUILD_EXAMPLES=ON -DSQLITECPP_RUN_CPPCHECK=OFF -DSQLITECPP_RUN_CPPLINT=OFF
 
       - name: Build
-        shell: bash
-        run: cmake --build build --config ${{ matrix.cfg.build_type }} -j2
+        shell: pwsh
+        run: cmake --build build --config Debug -j2
 
       - name: Test
-        shell: bash
-        run: ctest --verbose --output-on-failure --test-dir build -C ${{ matrix.cfg.build_type }}
+        shell: pwsh
+        run: ctest --verbose --output-on-failure --test-dir build -C Debug

@@ -15,10 +15,9 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        shell: msys2 {0}   # cmake/ninja from /mingw64/bin
+        shell: msys2 {0}   # cmake/ninja come from /mingw64/bin
 
     env:
-      BW_DIR: bw-out
       BUILD_DIR: build
 
     steps:
@@ -27,7 +26,7 @@ jobs:
           fetch-depth: 0
           submodules: false  # we self-heal below
 
-      # Self-heal googletest: try submodule, then shallow clone if needed
+      # Robust: try submodule init/update; if still missing, shallow-clone googletest
       - name: Ensure googletest is present
         shell: pwsh
         run: |
@@ -54,10 +53,7 @@ jobs:
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
 
-      - name: Install Build Wrapper
-        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v6
-
-      - name: CMake configure (Ninja)
+      - name: Configure (Ninja, export compile_commands.json)
         run: >
           cmake -S . -B "${BUILD_DIR}" -G Ninja
           -DCMAKE_BUILD_TYPE=Release
@@ -65,21 +61,13 @@ jobs:
           -DSQLITECPP_BUILD_TESTS=ON
           -DSQLITECPP_BUILD_EXAMPLES=ON
 
-      # IMPORTANT: run the wrapper AND the build in the MSYS2 shell
-      - name: CMake build (wrapped)
-        run: |
-          build-wrapper-win-x86-64.exe --out-dir "$BW_DIR" \
-            cmake --build "$BUILD_DIR" --config Release -j2
+      - name: Build
+        run: cmake --build "${BUILD_DIR}" --config Release -j2
 
-      - name: CTest
+      - name: Test
         run: ctest --output-on-failure -C Release --test-dir "${BUILD_DIR}"
 
-      - name: Show compile_commands.json
-        shell: pwsh
-        run: |
-          Get-Item "$env:BW_DIR\compile_commands.json"
-          Get-Content "$env:BW_DIR\compile_commands.json" -TotalCount 20
-
+      # SonarCloud scan using compile_commands.json (no wrapper)
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
@@ -88,5 +76,5 @@ jobs:
           args: >
             --define sonar.sources=.
             --define sonar.exclusions=**/googletest/**,**/.scannerwork/**,**/${{ env.BUILD_DIR }}/**
-            --define sonar.cfamily.compile-commands=${{ env.BW_DIR }}/compile_commands.json
+            --define sonar.cfamily.compile-commands=${{ env.BUILD_DIR }}/compile_commands.json
             --define sonar.verbose=true
