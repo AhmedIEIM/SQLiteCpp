@@ -15,7 +15,7 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        shell: msys2 {0}   # cmake/ninja come from /mingw64/bin
+        shell: msys2 {0}   # cmake/ninja from /mingw64/bin
 
     env:
       BW_DIR: bw-out
@@ -25,18 +25,23 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: recursive   # REQUIRED: pulls googletest submodule
+          submodules: false  # we'll fetch/repair submodules ourselves
 
-      # Double-check submodule presence (fail early if missing)
-      - name: Verify googletest submodule
+      # Robust: try submodule init/update; if still missing, clone googletest
+      - name: Ensure googletest is present
         shell: pwsh
         run: |
+          git submodule sync --recursive
+          git -c protocol.version=2 submodule update --init --force --depth 1 --recursive --jobs 8
           if (-not (Test-Path "$env:GITHUB_WORKSPACE\googletest\CMakeLists.txt")) {
-            git submodule sync --recursive
-            git submodule update --init --recursive
+            Write-Host "Submodule not materialized; cloning googletest shallowly..."
+            if (Test-Path "$env:GITHUB_WORKSPACE\googletest") {
+              Remove-Item -Recurse -Force "$env:GITHUB_WORKSPACE\googletest"
+            }
+            git clone --depth 1 https://github.com/google/googletest.git "$env:GITHUB_WORKSPACE\googletest"
           }
           if (-not (Test-Path "$env:GITHUB_WORKSPACE\googletest\CMakeLists.txt")) {
-            Write-Error "googletest submodule is missing (required when SQLITECPP_BUILD_TESTS=ON)."
+            Write-Error "googletest is still missing; aborting."
           }
 
       - name: Install MSYS2 toolchain
@@ -67,7 +72,7 @@ jobs:
           $build = "cmake --build `"$ws/${{ env.BUILD_DIR }}`" --config Release -j2"
           build-wrapper-win-x86-64.exe --out-dir $env:BW_DIR msys2 -c "$build"
 
-      - name: CTest (run unit tests)
+      - name: CTest
         run: ctest --output-on-failure -C Release --test-dir "${BUILD_DIR}"
 
       - name: Show compile_commands.json
