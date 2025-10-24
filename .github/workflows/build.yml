@@ -25,16 +25,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: false  # we'll fetch/repair submodules ourselves
+          submodules: false  # we self-heal below
 
-      # Robust: try submodule init/update; if still missing, clone googletest
+      # Self-heal googletest: try submodule, then shallow clone if needed
       - name: Ensure googletest is present
         shell: pwsh
         run: |
           git submodule sync --recursive
           git -c protocol.version=2 submodule update --init --force --depth 1 --recursive --jobs 8
           if (-not (Test-Path "$env:GITHUB_WORKSPACE\googletest\CMakeLists.txt")) {
-            Write-Host "Submodule not materialized; cloning googletest shallowly..."
+            Write-Host "Submodule missing; cloning googletest shallowly..."
             if (Test-Path "$env:GITHUB_WORKSPACE\googletest") {
               Remove-Item -Recurse -Force "$env:GITHUB_WORKSPACE\googletest"
             }
@@ -65,12 +65,11 @@ jobs:
           -DSQLITECPP_BUILD_TESTS=ON
           -DSQLITECPP_BUILD_EXAMPLES=ON
 
+      # IMPORTANT: run the wrapper AND the build in the MSYS2 shell
       - name: CMake build (wrapped)
-        shell: pwsh
         run: |
-          $ws = "${{ github.workspace }}" -replace '\\','/'
-          $build = "cmake --build `"$ws/${{ env.BUILD_DIR }}`" --config Release -j2"
-          build-wrapper-win-x86-64.exe --out-dir $env:BW_DIR msys2 -c "$build"
+          build-wrapper-win-x86-64.exe --out-dir "$BW_DIR" \
+            cmake --build "$BUILD_DIR" --config Release -j2
 
       - name: CTest
         run: ctest --output-on-failure -C Release --test-dir "${BUILD_DIR}"

@@ -10,8 +10,11 @@ jobs:
       fail-fast: false
       matrix:
         cfg:
-          - { name: "Windows MSVC (VS2022)", gen: "Visual Studio 17 2022", build_type: "Debug", use_mingw: "false" }
-          - { name: "Windows MinGW (Makefiles)", gen: "MinGW Makefiles",    build_type: "Debug", use_mingw: "true"  }
+          - { name: "Windows MSVC (VS2022)", gen: "Visual Studio 17 2022", build_type: "Debug", use_mingw: "false",
+              extra_flags: "" }
+          - { name: "Windows MinGW (Makefiles)", gen: "MinGW Makefiles", build_type: "Debug", use_mingw: "true",
+              # Work around missing libssp in Chocolatey MinGW by disabling stack protector:
+              extra_flags: "-DCMAKE_C_FLAGS=-fno-stack-protector -DCMAKE_CXX_FLAGS=-fno-stack-protector" }
 
     steps:
       - name: Checkout
@@ -26,7 +29,7 @@ jobs:
           git submodule sync --recursive
           git -c protocol.version=2 submodule update --init --force --depth 1 --recursive --jobs 8
           if (-not (Test-Path "$env:GITHUB_WORKSPACE\googletest\CMakeLists.txt")) {
-            Write-Host "Submodule not materialized; cloning googletest shallowly..."
+            Write-Host "Submodule missing; cloning googletest shallowly..."
             if (Test-Path "$env:GITHUB_WORKSPACE\googletest") {
               Remove-Item -Recurse -Force "$env:GITHUB_WORKSPACE\googletest"
             }
@@ -40,7 +43,7 @@ jobs:
         if: matrix.cfg.use_mingw == 'false'
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Install MinGW
+      - name: Install MinGW (Chocolatey)
         if: matrix.cfg.use_mingw == 'true'
         shell: pwsh
         run: choco install -y mingw
@@ -48,7 +51,7 @@ jobs:
       - name: Add MinGW to PATH
         if: matrix.cfg.use_mingw == 'true'
         shell: bash
-        run: echo "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin" >> "$GITHUB_PATH"
+        run: echo "C:\mingw64\bin" >> "$GITHUB_PATH"
 
       - name: Configure
         shell: bash
@@ -60,7 +63,8 @@ jobs:
             -DSQLITECPP_BUILD_TESTS=ON \
             -DSQLITECPP_BUILD_EXAMPLES=ON \
             -DSQLITECPP_RUN_CPPCHECK=OFF \
-            -DSQLITECPP_RUN_CPPLINT=OFF
+            -DSQLITECPP_RUN_CPPLINT=OFF \
+            ${{ matrix.cfg.extra_flags }}
 
       - name: Build
         shell: bash
