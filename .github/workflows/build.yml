@@ -197,7 +197,7 @@ jobs:
           echo "---- SYMBOLS ----";  find out/symbols  -maxdepth 4 -type f -print || true
 
       - name: Upload artifact (full symbols)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ghidra-full-windows-msys2-Release
           path: out/full/**
@@ -205,7 +205,7 @@ jobs:
           retention-days: 30
 
       - name: Upload artifact (stripped)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ghidra-stripped-windows-msys2-Release
           path: out/stripped/**
@@ -213,7 +213,7 @@ jobs:
           retention-days: 30
 
       - name: Upload artifact (separate .debug symbols)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ghidra-symbols-windows-msys2-Release
           path: out/symbols/**
